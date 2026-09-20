@@ -1,69 +1,161 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản lý Category - AJAX</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Danh mục - Rest API AJAX</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .card { border-radius: 12px; border: none; }
+        .table img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
+        .btn-custom { border-radius: 8px; font-weight: 500; }
+    </style>
 </head>
-<body class="container mt-4">
-    <h2>Quản lý Danh Mục (AJAX)</h2>
+<body>
 
-    <!-- Form Thêm / Sửa -->
-    <div class="card my-3 p-3">
-        <input type="hidden" id="catId">
-        <div class="mb-3">
-            <label class="form-label">Tên danh mục:</label>
-            <input type="text" id="catName" class="form-control">
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-store me-2"></i>Admin Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/"><i class="fa-solid fa-list me-1"></i> Quản lý Danh mục</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/products"><i class="fa-solid fa-box-open me-1"></i> Quản lý Sản phẩm</a>
+                    </li>
+                </ul>
+                <a href="/swagger-ui.html" target="_blank" class="btn btn-outline-light btn-sm rounded-pill">
+                    <i class="fa-solid fa-code me-1"></i> Swagger API
+                </a>
+            </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Icon:</label>
-            <input type="text" id="catIcon" class="form-control">
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Alert Notification -->
+        <div id="alertBox" class="alert alert-dismissible fade show d-none" role="alert">
+            <span id="alertMessage"></span>
+            <button type="button" class="btn-close" onclick="$('#alertBox').addClass('d-none')"></button>
         </div>
-        <button class="btn btn-primary" onclick="saveCategory()">Lưu</button>
+
+        <div class="row g-4">
+            <!-- Form bên trái -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm p-4">
+                    <h5 class="card-title fw-bold text-primary mb-3" id="formTitle">
+                        <i class="fa-solid fa-plus-circle me-2"></i>Thêm Danh Mục
+                    </h5>
+                    <form id="categoryForm">
+                        <input type="hidden" id="catId">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tên danh mục <span class="text-danger">*</span></label>
+                            <input type="text" id="catName" class="form-control" placeholder="Ví dụ: Điện thoại, Thời trang..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Icon / Đường dẫn ảnh</label>
+                            <input type="text" id="catIcon" class="form-control" placeholder="https://example.com/icon.png">
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary btn-custom" onclick="saveCategory()">
+                                <i class="fa-solid fa-floppy-disk me-1"></i> Lưu thông tin
+                            </button>
+                            <button type="button" class="btn btn-light btn-custom text-secondary" onclick="resetForm()">
+                                <i class="fa-solid fa-rotate-left me-1"></i> Làm mới
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bảng dữ liệu bên phải -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title fw-bold text-dark m-0"><i class="fa-solid fa-layer-group me-2"></i>Danh Sách Danh Mục</h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="loadCategories()">
+                            <i class="fa-solid fa-arrows-rotate me-1"></i> Tải lại
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 80px;">ID</th>
+                                    <th style="width: 80px;">Icon</th>
+                                    <th>Tên danh mục</th>
+                                    <th class="text-center" style="width: 140px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categoryTable">
+                                <!-- Data AJAX Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Bảng danh sách -->
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Tên</th>
-                <th>Icon</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody id="categoryTable"></tbody>
-    </table>
-
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API_URL = '/api/v1/categories';
+
+        function showAlert(msg, type = 'success') {
+            $('#alertMessage').text(msg);
+            $('#alertBox').removeClass('d-none alert-success alert-danger').addClass(`alert-${type}`);
+            setTimeout(() => $('#alertBox').addClass('d-none'), 3000);
+        }
 
         function loadCategories() {
             $.get(API_URL, function(data) {
                 let html = '';
-                data.forEach(item => {
-                    html += `<tr>
-                        <td>${item.id}</td>
-                        <td>${item.name}</td>
-                        <td>${item.icon || ''}</td>
-                        <td>
-                            <button class="btn btn-sm btn-warning" onclick="editCategory(${item.id}, '${item.name}', '${item.icon || ''}')">Sửa</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteCategory(${item.id})">Xóa</button>
-                        </td>
-                    </tr>`;
-                });
+                if(data.length === 0) {
+                    html = `<tr><td colspan="4" class="text-center text-muted py-4"><i class="fa-regular fa-folder-open fs-3 d-block mb-2"></i>Chưa có danh mục nào</td></tr>`;
+                } else {
+                    data.forEach(item => {
+                        const iconImg = item.icon ? `<img src="${item.icon}" id="img-${item.id}" onerror="this.src='https://via.placeholder.com/40?text=No+Img'" alt="icon">` : '<span class="badge bg-secondary">Không có</span>';
+                        html += `<tr>
+                            <td class="fw-bold text-secondary">#${item.id}</td>
+                            <td>${iconImg}</td>
+                            <td class="fw-semibold text-dark">${item.name}</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-warning me-1" onclick="editCategory(${item.id}, '${item.name}', '${item.icon || ''}')" title="Sửa">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${item.id})" title="Xóa">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </td>
+                        </tr>`;
+                    });
+                }
                 $('#categoryTable').html(html);
+            }).fail(function() {
+                showAlert('Không thể tải danh sách danh mục!', 'danger');
             });
         }
 
         function saveCategory() {
-            const id = $('#catId').val();
-            const data = {
-                name: $('#catName').val(),
-                icon: $('#catIcon').val()
-            };
+            const name = $('#catName').val().trim();
+            if (!name) {
+                showAlert('Vui lòng nhập tên danh mục!', 'danger');
+                return;
+            }
 
+            const id = $('#catId').val();
+            const data = { name: name, icon: $('#catIcon').val().trim() };
             const type = id ? 'PUT' : 'POST';
             const url = id ? `${API_URL}/${id}` : API_URL;
 
@@ -73,10 +165,12 @@
                 contentType: 'application/json',
                 data: JSON.stringify(data),
                 success: function() {
-                    $('#catId').val('');
-                    $('#catName').val('');
-                    $('#catIcon').val('');
+                    showAlert(id ? 'Cập nhật danh mục thành công!' : 'Thêm mới danh mục thành công!');
+                    resetForm();
                     loadCategories();
+                },
+                error: function() {
+                    showAlert('Đã có lỗi xảy ra. Vui lòng thử lại!', 'danger');
                 }
             });
         }
@@ -85,18 +179,30 @@
             $('#catId').val(id);
             $('#catName').val(name);
             $('#catIcon').val(icon);
+            $('#formTitle').html('<i class="fa-solid fa-pen-to-square me-2"></i>Cập Nhật Danh Mục');
         }
 
         function deleteCategory(id) {
-            if (confirm('Bạn có chắc chắn muốn xóa?')) {
+            if (confirm('Bạn có chắc chắn muốn xóa danh mục này?')) {
                 $.ajax({
                     url: `${API_URL}/${id}`,
                     type: 'DELETE',
                     success: function() {
+                        showAlert('Đã xóa danh mục thành công!');
                         loadCategories();
+                    },
+                    error: function() {
+                        showAlert('Xóa không thành công! Có thể danh mục đang chứa sản phẩm.', 'danger');
                     }
                 });
             }
+        }
+
+        function resetForm() {
+            $('#catId').val('');
+            $('#catName').val('');
+            $('#catIcon').val('');
+            $('#formTitle').html('<i class="fa-solid fa-plus-circle me-2"></i>Thêm Danh Mục');
         }
 
         $(document).ready(loadCategories);
