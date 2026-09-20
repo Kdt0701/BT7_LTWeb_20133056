@@ -10,4 +10,9 @@ public class WebController {
     public String index() {
         return "categories";
     }
+
+    @GetMapping("/products")
+    public String products() {
+        return "products";
+    }
 }
