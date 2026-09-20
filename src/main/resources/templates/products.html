@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Product - AJAX</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body class="container mt-4">
+    <h2>Quản lý Sản Phẩm (AJAX)</h2>
+    <a href="/" class="btn btn-secondary mb-3">Chuyển sang Quản lý Danh Mục</a>
+
+    <!-- Form Thêm / Sửa Product -->
+    <div class="card my-3 p-3">
+        <input type="hidden" id="prodId">
+        <div class="mb-3">
+            <label class="form-label">Tên sản phẩm:</label>
+            <input type="text" id="prodName" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Giá:</label>
+            <input type="number" step="0.01" id="prodPrice" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Hình ảnh (URL/Path):</label>
+            <input type="text" id="prodImage" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Danh mục:</label>
+            <select id="prodCategory" class="form-select"></select>
+        </div>
+        <button class="btn btn-primary" onclick="saveProduct()">Lưu</button>
+    </div>
+
+    <!-- Bảng danh sách Product -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên sản phẩm</th>
+                <th>Giá</th>
+                <th>Hình ảnh</th>
+                <th>ID Danh mục</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody id="productTable"></tbody>
+    </table>
+
+    <script>
+        const API_PRODUCT = '/api/v1/products';
+        const API_CATEGORY = '/api/v1/categories';
+
+        function loadCategoriesSelect() {
+            $.get(API_CATEGORY, function(data) {
+                let options = '<option value="">-- Chọn danh mục --</option>';
+                data.forEach(cat => {
+                    options += `<option value="${cat.id}">${cat.name}</option>`;
+                });
+                $('#prodCategory').html(options);
+            });
+        }
+
+        function loadProducts() {
+            $.get(API_PRODUCT, function(data) {
+                let html = '';
+                data.forEach(item => {
+                    html += `<tr>
+                        <td>${item.id}</td>
+                        <td>${item.name}</td>
+                        <td>${item.price || 0}</td>
+                        <td>${item.image || ''}</td>
+                        <td>${item.categoryId || ''}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editProduct(${item.id}, '${item.name}', ${item.price || 0}, '${item.image || ''}', ${item.categoryId || 'null'})">Sửa</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteProduct(${item.id})">Xóa</button>
+                        </td>
+                    </tr>`;
+                });
+                $('#productTable').html(html);
+            });
+        }
+
+        function saveProduct() {
+            const id = $('#prodId').val();
+            const data = {
+                name: $('#prodName').val(),
+                price: parseFloat($('#prodPrice').val()) || 0,
+                image: $('#prodImage').val(),
+                categoryId: $('#prodCategory').val() ? parseInt($('#prodCategory').val()) : null
+            };
+
+            const type = id ? 'PUT' : 'POST';
+            const url = id ? `${API_PRODUCT}/${id}` : API_PRODUCT;
+
+            $.ajax({
+                url: url,
+                type: type,
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function() {
+                    resetForm();
+                    loadProducts();
+                }
+            });
+        }
+
+        function editProduct(id, name, price, image, categoryId) {
+            $('#prodId').val(id);
+            $('#prodName').val(name);
+            $('#prodPrice').val(price);
+            $('#prodImage').val(image);
+            $('#prodCategory').val(categoryId);
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+                $.ajax({
+                    url: `${API_PRODUCT}/${id}`,
+                    type: 'DELETE',
+                    success: function() {
+                        loadProducts();
+                    }
+                });
+            }
+        }
+
+        function resetForm() {
+            $('#prodId').val('');
+            $('#prodName').val('');
+            $('#prodPrice').val('');
+            $('#prodImage').val('');
+            $('#prodCategory').val('');
+        }
+
+        $(document).ready(function() {
+            loadCategoriesSelect();
+            loadProducts();
+        });
+    </script>
+</body>
+</html>
