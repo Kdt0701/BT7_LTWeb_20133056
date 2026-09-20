@@ -1,0 +1,19 @@
+# Build output
+target/
+
+# IDE settings
+.idea/
+.vscode/
+*.iml
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+application-local.properties
+application-local.yml
+application-local.yaml
+
+# Runtime uploads
+uploads/
+src/main/resources/static/uploads/
