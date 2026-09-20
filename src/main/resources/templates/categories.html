@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Category - AJAX</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body class="container mt-4">
+    <h2>Quản lý Danh Mục (AJAX)</h2>
+
+    <!-- Form Thêm / Sửa -->
+    <div class="card my-3 p-3">
+        <input type="hidden" id="catId">
+        <div class="mb-3">
+            <label class="form-label">Tên danh mục:</label>
+            <input type="text" id="catName" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Icon:</label>
+            <input type="text" id="catIcon" class="form-control">
+        </div>
+        <button class="btn btn-primary" onclick="saveCategory()">Lưu</button>
+    </div>
+
+    <!-- Bảng danh sách -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên</th>
+                <th>Icon</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody id="categoryTable"></tbody>
+    </table>
+
+    <script>
+        const API_URL = '/api/v1/categories';
+
+        function loadCategories() {
+            $.get(API_URL, function(data) {
+                let html = '';
+                data.forEach(item => {
+                    html += `<tr>
+                        <td>${item.id}</td>
+                        <td>${item.name}</td>
+                        <td>${item.icon || ''}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editCategory(${item.id}, '${item.name}', '${item.icon || ''}')">Sửa</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteCategory(${item.id})">Xóa</button>
+                        </td>
+                    </tr>`;
+                });
+                $('#categoryTable').html(html);
+            });
+        }
+
+        function saveCategory() {
+            const id = $('#catId').val();
+            const data = {
+                name: $('#catName').val(),
+                icon: $('#catIcon').val()
+            };
+
+            const type = id ? 'PUT' : 'POST';
+            const url = id ? `${API_URL}/${id}` : API_URL;
+
+            $.ajax({
+                url: url,
+                type: type,
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function() {
+                    $('#catId').val('');
+                    $('#catName').val('');
+                    $('#catIcon').val('');
+                    loadCategories();
+                }
+            });
+        }
+
+        function editCategory(id, name, icon) {
+            $('#catId').val(id);
+            $('#catName').val(name);
+            $('#catIcon').val(icon);
+        }
+
+        function deleteCategory(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa?')) {
+                $.ajax({
+                    url: `${API_URL}/${id}`,
+                    type: 'DELETE',
+                    success: function() {
+                        loadCategories();
+                    }
+                });
+            }
+        }
+
+        $(document).ready(loadCategories);
+    </script>
+</body>
+</html>
