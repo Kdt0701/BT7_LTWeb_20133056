@@ -1,105 +1,164 @@
+```markdown
 # Spring Boot Product Category API AJAX
-# COMMING SOON...
-Repository chuẩn bị cho bài tập Lập trình Web ngày 16/09/2026, phần 2 (tiếp theo).
+
+Repository hoàn chỉnh cho bài tập Lập trình Web - Hệ thống quản lý Danh mục (Category) và Sản phẩm (Product) xây dựng bằng Spring Boot 3, cung cấp RESTful API, tài liệu hóa bằng Swagger 3 (Springdoc OpenAPI) và kết nối giao diện phía máy khách bằng AJAX/jQuery.
 
 ## Mục tiêu bài tập
 
-Chuẩn bị một ứng dụng Spring Boot 3 có cấu trúc rõ ràng để lần lượt xây dựng API REST cho Category và Product, tài liệu hóa API, rồi kết nối giao diện bằng AJAX. Hiện repository chỉ là bộ khung; chưa có chức năng nghiệp vụ.
+Xây dựng ứng dụng Spring Boot 3 chuẩn kiến trúc Layered Architecture (Controller - Service - Repository - Entity/DTO) để giải quyết các yêu cầu:
+1. Triển khai CRUD RESTful API cho cả **Category** và **Product**.
+2. Tự động hóa tài liệu API bằng **Springdoc OpenAPI (Swagger 3)**.
+3. Xây dựng giao diện đơn trang (SPA) sử dụng **Thymeleaf + jQuery AJAX** để thao tác dữ liệu không cần load lại trang.
 
-## Công nghệ dự kiến sử dụng
+## Công nghệ sử dụng
 
-- Java 21 và Spring Boot 3
-- Spring Web, Spring Data JPA, Validation
-- Thymeleaf cho giao diện render phía máy chủ khi cần
-- Lombok
-- Microsoft SQL Server JDBC Driver
-- jQuery/AJAX ở giai đoạn giao diện
-- Springdoc OpenAPI (Swagger 3) ở mục 4
-- Maven và Spring Boot Test
+- **Java**: 21
+- **Framework**: Spring Boot 3.5.x (Spring Web, Spring Data JPA, Spring Validation)
+- **Database**: Microsoft SQL Server
+- **View Template**: Thymeleaf
+- **Client Scripting**: jQuery, AJAX, Bootstrap 5
+- **API Documentation**: Springdoc OpenAPI Starter WebMVC UI v2.3.0 (Swagger 3)
+- **Library & Tools**: Lombok, Maven, Git/GitHub
 
-## Kế hoạch thực hiện
+---
 
-### Mục 3 - CRUD REST API
+## Tiến độ thực hiện
 
-- [ ] Thiết kế Entity và quan hệ Category - Product.
-- [ ] Cấu hình kết nối SQL Server bằng tệp môi trường cục bộ, không đưa thông tin nhạy cảm vào Git.
-- [ ] Tạo Repository, Service, DTO/response và Controller.
-- [ ] Hoàn thiện CRUD, kiểm tra validation, trạng thái HTTP và xử lý lỗi.
-- [ ] Kiểm thử API bằng công cụ phù hợp.
+- [x] **Mục 3 - CRUD REST API**:
+  - [x] Thiết kế Entity và quan hệ `@OneToMany` / `@ManyToOne` giữa Category và Product.
+  - [x] Cấu hình kết nối SQL Server trong `application.properties`.
+  - [x] Tạo DTO, Repository, Service/ServiceImpl và REST Controllers.
+  - [x] Kiểm tra Validation, xử lý HTTP Status Code (200, 201, 204, 404, 400).
+- [x] **Mục 4 - API Documentation**:
+  - [x] Tích hợp Springdoc OpenAPI cho Spring Boot 3.
+  - [x] Cấu hình OpenAPI Metadata (Title, Version, Description).
+  - [x] Gắn nhãn `@Tag`, `@Operation` mô tả endpoints trong REST Controllers.
+- [x] **Mục 5 - AJAX Giao diện**:
+  - [x] Tạo trang quản lý Category (`/`) và Product (`/products`).
+  - [x] Thực hiện toàn bộ thao tác Xem, Thêm, Sửa, Xóa bằng jQuery AJAX.
+  - [x] Load danh sách Category động vào `select-box` khi tạo/chỉnh sửa Product.
+- [x] **Kiểm thử & Đóng gói**:
+  - [x] Kiểm thử toàn bộ luồng CRUD cho Category và Product.
+  - [x] Hoàn thiện tệp `.gitignore` và hướng dẫn chạy.
+  - [x] Commit và push mã nguồn lên GitHub repository.
 
-### Mục 4 - API documentation
+---
 
-- [ ] Chỉ bổ sung Springdoc OpenAPI cho Spring Boot 3.
-- [ ] Cấu hình metadata và kiểm tra Swagger UI.
-- [ ] Không triển khai Swagger 2 hoặc Springfox.
-
-> Lưu ý: mục 4 chỉ triển khai Swagger 3 bằng Springdoc OpenAPI, không triển khai Swagger 2/Springfox.
-
-### Mục 5 - AJAX giao diện
-
-- [ ] Tạo trang Thymeleaf và các tệp CSS/JS cần thiết.
-- [ ] Hiển thị danh sách Category và Product từ REST API.
-- [ ] Thêm, sửa, xóa bằng AJAX; dùng `FormData` nếu có upload.
-- [ ] Hiển thị thông báo lỗi/thành công và kiểm thử luồng người dùng.
-
-## Danh sách chức năng dự kiến
-
-### Category
-
-- Xem danh sách và chi tiết Category.
-- Thêm, cập nhật, xóa Category.
-- Kiểm tra tên Category trùng lặp.
-- Tìm kiếm và phân trang khi triển khai yêu cầu chi tiết.
-- Upload/quản lý icon khi đến phần upload.
-
-### Product
-
-- Xem danh sách và chi tiết Product.
-- Thêm, cập nhật, xóa Product.
-- Gán Product vào Category.
-- Kiểm tra tên Product trùng lặp.
-- Tìm kiếm và phân trang khi triển khai yêu cầu chi tiết.
-- Upload/quản lý hình ảnh khi đến phần upload.
-
-## Checklist tiến độ
-
-- [ ] Hoàn thành mục 3: CRUD REST API.
-- [ ] Hoàn thành mục 4: Springdoc OpenAPI / Swagger 3.
-- [ ] Hoàn thành mục 5: giao diện AJAX.
-- [ ] Kiểm thử toàn bộ luồng Category và Product.
-- [ ] Hoàn thiện hướng dẫn chạy.
-- [ ] Commit và push khi được yêu cầu.
-
-## Cấu trúc thư mục dự kiến
+## Cấu trúc thư mục dự án
 
 ```text
 spring-boot-product-category-api-ajax/
 ├── src/
 │   ├── main/
 │   │   ├── java/vn/iotstar/
+│   │   │   ├── Bt7LtWebApplication.java
 │   │   │   ├── config/
+│   │   │   │   └── OpenAPIConfig.java
 │   │   │   ├── controller/
+│   │   │   │   ├── CategoryApiController.java
+│   │   │   │   ├── ProductApiController.java
+│   │   │   │   └── WebController.java
 │   │   │   ├── dto/
+│   │   │   │   ├── CategoryDTO.java
+│   │   │   │   └── ProductDTO.java
 │   │   │   ├── entity/
+│   │   │   │   ├── Category.java
+│   │   │   │   └── Product.java
 │   │   │   ├── repository/
-│   │   │   ├── service/
-│   │   │   └── service/impl/
+│   │   │   │   ├── CategoryRepository.java
+│   │   │   │   └── ProductRepository.java
+│   │   │   └── service/
+│   │   │       ├── CategoryService.java
+│   │   │       ├── ProductService.java
+│   │   │       └── impl/
+│   │   │           ├── CategoryServiceImpl.java
+│   │   │           └── ProductServiceImpl.java
 │   │   └── resources/
+│   │       ├── application.properties
 │   │       ├── static/
-│   │       │   ├── css/
-│   │       │   └── js/
 │   │       └── templates/
+│   │           ├── categories.html
+│   │           └── products.html
 │   └── test/
-│       └── java/vn/iotstar/
 ├── .gitignore
 ├── pom.xml
 └── README.md
+
 ```
 
-## Hướng dẫn chạy
+---
 
-Sẽ bổ sung sau khi bắt đầu cấu hình cơ sở dữ liệu và triển khai chức năng.
+## Hướng dẫn chạy dự án
 
-## Phạm vi hiện tại
+### 1. Yêu cầu môi trường
 
-Chưa tạo Entity, Repository, Service, Controller, AJAX, cấu hình Swagger, cấu hình SQL Server hoặc chức năng upload. Không đưa PDF, tài khoản hay mật khẩu SQL Server vào repository.
+* Java Development Kit (JDK) 21 trở lên.
+* Microsoft SQL Server đã cài đặt và đang bật dịch vụ.
+* Maven 3.8+ (hoặc wrapper trong IDE).
+
+### 2. Cấu hình Cơ sở dữ liệu
+
+1. Mở **SQL Server Management Studio (SSMS)** và tạo cơ sở dữ liệu:
+```sql
+CREATE DATABASE LTWeb_BT7;
+GO
+
+```
+
+
+2. Mở tệp `src/main/resources/application.properties` và điều chỉnh lại tài khoản SQL Server phù hợp với máy cục bộ:
+```properties
+spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=LTWeb_BT7;encrypt=false;trustServerCertificate=true
+spring.datasource.username=sa
+spring.datasource.password=123456
+
+```
+
+
+
+### 3. Khởi chạy ứng dụng
+
+* **Sử dụng Terminal / Command Line:**
+```bash
+mvn clean spring-boot:run
+
+```
+
+
+* **Sử dụng IDE (STS / Eclipse / IntelliJ):**
+* Mở dự án, nhấp chuột phải vào file `Bt7LtWebApplication.java` chọn **Run As** $\rightarrow$ **Spring Boot App**.
+
+
+
+### 4. Truy cập các đường dẫn
+
+Sau khi ứng dụng khởi chạy thành công ở cổng `8080`:
+
+* **Giao diện Quản lý Category (AJAX):** [http://localhost:8080/](http://localhost:8080/?utm_source=gemini)
+* **Giao diện Quản lý Product (AJAX):** [http://localhost:8080/products](http://localhost:8080/products?utm_source=gemini)
+* **Tài liệu Swagger UI (Mục 4):** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html?utm_source=gemini)
+* **OpenAPI Docs (JSON):** [http://localhost:8080/api-docs](http://localhost:8080/api-docs?utm_source=gemini)
+
+---
+
+## Danh sách REST API Endpoints
+
+### Category API (`/api/v1/categories`)
+
+* `GET /api/v1/categories` - Lấy danh sách danh mục
+* `GET /api/v1/categories/{id}` - Lấy chi tiết danh mục theo ID
+* `POST /api/v1/categories` - Thêm mới danh mục
+* `PUT /api/v1/categories/{id}` - Cập nhật danh mục theo ID
+* `DELETE /api/v1/categories/{id}` - Xóa danh mục theo ID
+
+### Product API (`/api/v1/products`)
+
+* `GET /api/v1/products` - Lấy danh sách sản phẩm
+* `GET /api/v1/products/{id}` - Lấy chi tiết sản phẩm theo ID
+* `POST /api/v1/products` - Thêm mới sản phẩm (kèm `categoryId`)
+* `PUT /api/v1/products/{id}` - Cập nhật sản phẩm theo ID
+* `DELETE /api/v1/products/{id}` - Xóa sản phẩm theo ID
+
+```
+
+```
