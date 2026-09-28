@@ -1,64 +1,13 @@
 package vn.iotstar.service.impl;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import vn.iotstar.dto.CategoryDTO;
-import vn.iotstar.entity.Category;
-import vn.iotstar.repository.CategoryRepository;
-import vn.iotstar.service.CategoryService;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-@Service
-public class CategoryServiceImpl implements CategoryService {
-
-    @Autowired
-    private CategoryRepository repository;
-
-    private CategoryDTO toDTO(Category entity) {
-        CategoryDTO dto = new CategoryDTO();
-        dto.setId(entity.getId());
-        dto.setName(entity.getName());
-        dto.setIcon(entity.getIcon());
-        return dto;
-    }
-
-    private Category toEntity(CategoryDTO dto) {
-        Category entity = new Category();
-        entity.setId(dto.getId());
-        entity.setName(dto.getName());
-        entity.setIcon(dto.getIcon());
-        return entity;
-    }
-
-    @Override
-    public List<CategoryDTO> getAll() {
-        return repository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
-    }
-
-    @Override
-    public CategoryDTO getById(Long id) {
-        return repository.findById(id).map(this::toDTO).orElse(null);
-    }
-
-    @Override
-    public CategoryDTO create(CategoryDTO dto) {
-        Category entity = toEntity(dto);
-        return toDTO(repository.save(entity));
-    }
-
-    @Override
-    public CategoryDTO update(Long id, CategoryDTO dto) {
-        return repository.findById(id).map(entity -> {
-            entity.setName(dto.getName());
-            entity.setIcon(dto.getIcon());
-            return toDTO(repository.save(entity));
-        }).orElse(null);
-    }
-
-    @Override
-    public void delete(Long id) {
-        repository.deleteById(id);
-    }
+import vn.iotstar.dto.CategoryResponse; import vn.iotstar.entity.Category; import vn.iotstar.exception.*; import vn.iotstar.repository.*; import vn.iotstar.service.*; import org.springframework.data.domain.*; import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional; import org.springframework.web.multipart.MultipartFile; import java.util.*;
+@Service @Transactional public class CategoryServiceImpl implements CategoryService {
+ private final CategoryRepository repo; private final ProductRepository products; private final IStorageService storage;
+ public CategoryServiceImpl(CategoryRepository r,ProductRepository p,IStorageService s){repo=r;products=p;storage=s;}
+ public List<CategoryResponse> findAll(String q){return (q==null||q.isBlank()?repo.findAll():repo.findByCategoryNameContainingIgnoreCase(q.trim())).stream().map(this::map).toList();}
+ public Page<CategoryResponse> search(String q,Pageable p){return repo.findByCategoryNameContainingIgnoreCase(q==null?"":q.trim(),p).map(this::map);}
+ public CategoryResponse findById(Long id){return map(entity(id));}
+ public CategoryResponse create(String name,MultipartFile icon){String n=name(name);if(repo.existsByCategoryNameIgnoreCase(n))throw new ConflictException("Tên Category đã tồn tại");Category c=new Category();c.setCategoryName(n);if(icon!=null&&!icon.isEmpty())c.setIcon(storage.store(icon));return map(repo.save(c));}
+ public CategoryResponse update(Long id,String name,MultipartFile icon){Category c=entity(id);String n=name(name);repo.findByCategoryNameIgnoreCase(n).filter(x->!x.getCategoryId().equals(id)).ifPresent(x->{throw new ConflictException("Tên Category đã tồn tại");});String old=c.getIcon(), next=old;if(icon!=null&&!icon.isEmpty())next=storage.store(icon);c.setCategoryName(n);c.setIcon(next);Category saved=repo.save(c);if(!Objects.equals(old,next))storage.delete(old);return map(saved);}
+ public void delete(Long id){Category c=entity(id);if(products.existsByCategoryCategoryId(id))throw new ConflictException("Không thể xóa Category đang có Product");repo.delete(c);storage.delete(c.getIcon());}
+ private Category entity(Long id){return repo.findById(id).orElseThrow(()->new NotFoundException("Không tìm thấy Category"));} private String name(String n){if(n==null||n.trim().isEmpty())throw new IllegalArgumentException("Tên Category không được để trống");return n.trim();} private CategoryResponse map(Category c){return new CategoryResponse(c.getCategoryId(),c.getCategoryName(),c.getIcon(),c.getIcon()==null?null:"/uploads/"+c.getIcon());}
 }

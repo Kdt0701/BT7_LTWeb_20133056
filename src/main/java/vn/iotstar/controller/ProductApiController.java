@@ -1,54 +1,5 @@
 package vn.iotstar.controller;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import vn.iotstar.dto.ProductDTO;
-import vn.iotstar.service.ProductService;
-
-import java.util.List;
-
-@RestController
-@RequestMapping("/api/v1/products")
-@Tag(name = "Product REST API", description = "Quản lý sản phẩm")
-public class ProductApiController {
-
-    @Autowired
-    private ProductService productService;
-
-    @GetMapping
-    @Operation(summary = "Lấy danh sách tất cả Product")
-    public ResponseEntity<List<ProductDTO>> getAll() {
-        return ResponseEntity.ok(productService.getAll());
-    }
-
-    @GetMapping("/{id}")
-    @Operation(summary = "Lấy thông tin Product theo ID")
-    public ResponseEntity<ProductDTO> getById(@PathVariable Long id) {
-        ProductDTO dto = productService.getById(id);
-        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
-    }
-
-    @PostMapping
-    @Operation(summary = "Thêm mới Product")
-    public ResponseEntity<ProductDTO> create(@Valid @RequestBody ProductDTO dto) {
-        return ResponseEntity.ok(productService.create(dto));
-    }
-
-    @PutMapping("/{id}")
-    @Operation(summary = "Cập nhật Product theo ID")
-    public ResponseEntity<ProductDTO> update(@PathVariable Long id, @Valid @RequestBody ProductDTO dto) {
-        ProductDTO updated = productService.update(id, dto);
-        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
-    }
-
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Xóa Product theo ID")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        productService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-}
+import vn.iotstar.dto.*;import vn.iotstar.service.ProductService;import org.springframework.data.domain.*;import org.springframework.http.*;import org.springframework.web.bind.annotation.*;import org.springframework.web.multipart.MultipartFile;import io.swagger.v3.oas.annotations.*;import io.swagger.v3.oas.annotations.tags.Tag;import java.math.BigDecimal;import java.util.*;
+@Tag(name="Product",description="CRUD Product và tải ảnh") @RestController @RequestMapping("/api/product") public class ProductApiController {private final ProductService s;public ProductApiController(ProductService s){this.s=s;} @GetMapping public ResponseEntity<ApiResponse<List<ProductResponse>>> all(@RequestParam(required=false)String q){return ResponseEntity.ok(ApiResponse.ok("Lấy danh sách Product thành công",s.findAll(q)));} @GetMapping("/search") public ResponseEntity<ApiResponse<Page<ProductResponse>>> search(@RequestParam(defaultValue="")String q,@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="10")int size){return ResponseEntity.ok(ApiResponse.ok("Tìm kiếm thành công",s.search(q,PageRequest.of(Math.max(0,page),Math.min(100,Math.max(1,size)),Sort.by("productName")))));} @GetMapping("/{id}") public ResponseEntity<ApiResponse<ProductResponse>> one(@PathVariable Long id){return ResponseEntity.ok(ApiResponse.ok("Lấy Product thành công",s.findById(id)));}
+ @Operation(summary="Thêm Product",description="multipart form data, imageFile là tùy chọn") @PostMapping(value="/addProduct",consumes=MediaType.MULTIPART_FORM_DATA_VALUE) public ResponseEntity<ApiResponse<ProductResponse>> add(@RequestParam String productName,@RequestParam Integer quantity,@RequestParam BigDecimal unitPrice,@RequestParam String description,@RequestParam BigDecimal discount,@RequestParam Short status,@RequestParam Long categoryId,@RequestPart(required=false) MultipartFile imageFile){return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Thêm Product thành công",s.create(productName,quantity,unitPrice,description,discount,status,categoryId,imageFile)));}
+ @PutMapping(value="/updateProduct",consumes=MediaType.MULTIPART_FORM_DATA_VALUE) public ResponseEntity<ApiResponse<ProductResponse>> update(@RequestParam Long productId,@RequestParam String productName,@RequestParam Integer quantity,@RequestParam BigDecimal unitPrice,@RequestParam String description,@RequestParam BigDecimal discount,@RequestParam Short status,@RequestParam Long categoryId,@RequestPart(required=false) MultipartFile imageFile){return ResponseEntity.ok(ApiResponse.ok("Cập nhật Product thành công",s.update(productId,productName,quantity,unitPrice,description,discount,status,categoryId,imageFile)));} @DeleteMapping("/deleteProduct") public ResponseEntity<ApiResponse<Void>> delete(@RequestParam Long productId){s.delete(productId);return ResponseEntity.ok(ApiResponse.ok("Xóa Product thành công",null));}}

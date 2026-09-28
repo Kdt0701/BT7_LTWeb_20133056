@@ -1,83 +1,9 @@
 package vn.iotstar.service.impl;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import vn.iotstar.dto.ProductDTO;
-import vn.iotstar.entity.Category;
-import vn.iotstar.entity.Product;
-import vn.iotstar.repository.CategoryRepository;
-import vn.iotstar.repository.ProductRepository;
-import vn.iotstar.service.ProductService;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-@Service
-public class ProductServiceImpl implements ProductService {
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private CategoryRepository categoryRepository;
-
-    private ProductDTO toDTO(Product entity) {
-        ProductDTO dto = new ProductDTO();
-        dto.setId(entity.getId());
-        dto.setName(entity.getName());
-        dto.setPrice(entity.getPrice());
-        dto.setImage(entity.getImage());
-        if (entity.getCategory() != null) {
-            dto.setCategoryId(entity.getCategory().getId());
-        }
-        return dto;
-    }
-
-    private Product toEntity(ProductDTO dto) {
-        Product entity = new Product();
-        entity.setId(dto.getId());
-        entity.setName(dto.getName());
-        entity.setPrice(dto.getPrice());
-        entity.setImage(dto.getImage());
-        if (dto.getCategoryId() != null) {
-            Category category = categoryRepository.findById(dto.getCategoryId()).orElse(null);
-            entity.setCategory(category);
-        }
-        return entity;
-    }
-
-    @Override
-    public List<ProductDTO> getAll() {
-        return productRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
-    }
-
-    @Override
-    public ProductDTO getById(Long id) {
-        return productRepository.findById(id).map(this::toDTO).orElse(null);
-    }
-
-    @Override
-    public ProductDTO create(ProductDTO dto) {
-        Product entity = toEntity(dto);
-        return toDTO(productRepository.save(entity));
-    }
-
-    @Override
-    public ProductDTO update(Long id, ProductDTO dto) {
-        return productRepository.findById(id).map(entity -> {
-            entity.setName(dto.getName());
-            entity.setPrice(dto.getPrice());
-            entity.setImage(dto.getImage());
-            if (dto.getCategoryId() != null) {
-                Category category = categoryRepository.findById(dto.getCategoryId()).orElse(null);
-                entity.setCategory(category);
-            }
-            return toDTO(productRepository.save(entity));
-        }).orElse(null);
-    }
-
-    @Override
-    public void delete(Long id) {
-        productRepository.deleteById(id);
-    }
-}
+import vn.iotstar.dto.ProductResponse; import vn.iotstar.entity.*; import vn.iotstar.exception.*; import vn.iotstar.repository.*; import vn.iotstar.service.*; import org.springframework.data.domain.*; import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional; import org.springframework.web.multipart.MultipartFile; import java.math.*; import java.time.LocalDateTime; import java.util.*;
+@Service @Transactional public class ProductServiceImpl implements ProductService {private final ProductRepository repo;private final CategoryRepository cats;private final IStorageService storage; public ProductServiceImpl(ProductRepository r,CategoryRepository c,IStorageService s){repo=r;cats=c;storage=s;}
+ public List<ProductResponse> findAll(String q){return(q==null||q.isBlank()?repo.findAll():repo.findByProductNameContainingIgnoreCase(q.trim())).stream().map(this::map).toList();} public Page<ProductResponse> search(String q,Pageable p){return repo.findByProductNameContainingIgnoreCase(q==null?"":q.trim(),p).map(this::map);} public ProductResponse findById(Long id){return map(entity(id));}
+ public ProductResponse create(String n,Integer q,BigDecimal price,String d,BigDecimal discount,Short status,Long cat,MultipartFile image){valid(n,q,price,d,discount,status);String name=n.trim();if(repo.existsByProductNameIgnoreCase(name))throw new ConflictException("Tên Product đã tồn tại");Product p=new Product();fill(p,name,q,price,d,discount,status,cat);p.setCreateDate(LocalDateTime.now());if(image!=null&&!image.isEmpty())p.setImages(storage.store(image));return map(repo.save(p));}
+ public ProductResponse update(Long id,String n,Integer q,BigDecimal price,String d,BigDecimal discount,Short status,Long cat,MultipartFile image){valid(n,q,price,d,discount,status);Product p=entity(id);String name=n.trim();repo.findByProductNameIgnoreCase(name).filter(x->!x.getProductId().equals(id)).ifPresent(x->{throw new ConflictException("Tên Product đã tồn tại");});String old=p.getImages(), next=old;if(image!=null&&!image.isEmpty())next=storage.store(image);fill(p,name,q,price,d,discount,status,cat);p.setImages(next);Product saved=repo.save(p);if(!Objects.equals(old,next))storage.delete(old);return map(saved);}
+ public void delete(Long id){Product p=entity(id);repo.delete(p);storage.delete(p.getImages());} private Product entity(Long id){return repo.findById(id).orElseThrow(()->new NotFoundException("Không tìm thấy Product"));} private Category category(Long id){return cats.findById(id).orElseThrow(()->new NotFoundException("Không tìm thấy Category"));}
+ private void fill(Product p,String n,Integer q,BigDecimal price,String d,BigDecimal discount,Short status,Long cat){p.setProductName(n);p.setLegacyName(n);p.setQuantity(q);p.setUnitPrice(price);p.setLegacyPrice(price);p.setDescription(d.trim());p.setDiscount(discount);p.setStatus(status);p.setCategory(category(cat));} private void valid(String n,Integer q,BigDecimal price,String d,BigDecimal discount,Short s){if(n==null||n.trim().isEmpty()||d==null||d.trim().isEmpty())throw new IllegalArgumentException("Tên và mô tả Product là bắt buộc");if(q==null||q<0||price==null||price.signum()<0||discount==null||discount.signum()<0||discount.compareTo(new BigDecimal("100"))>0||s==null||(s!=0&&s!=1))throw new IllegalArgumentException("Số lượng, giá, giảm giá hoặc trạng thái không hợp lệ");}
+ private ProductResponse map(Product p){Category c=p.getCategory();return new ProductResponse(p.getProductId(),p.getProductName(),p.getQuantity(),p.getUnitPrice(),p.getImages(),p.getImages()==null?null:"/uploads/"+p.getImages(),p.getDescription(),p.getDiscount(),p.getCreateDate(),p.getStatus(),c.getCategoryId(),c.getCategoryName());}}

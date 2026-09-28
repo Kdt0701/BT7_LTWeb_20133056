@@ -1,7 +1,3 @@
 package vn.iotstar.repository;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import vn.iotstar.entity.Product;
-
-public interface ProductRepository extends JpaRepository<Product, Long> {
-}
+import vn.iotstar.entity.Product; import org.springframework.data.domain.*; import org.springframework.data.jpa.repository.JpaRepository; import java.time.LocalDateTime; import java.util.*;
+public interface ProductRepository extends JpaRepository<Product,Long> { Optional<Product> findByProductNameIgnoreCase(String name); boolean existsByProductNameIgnoreCase(String name); List<Product> findByProductNameContainingIgnoreCase(String name); Page<Product> findByProductNameContainingIgnoreCase(String name, Pageable p); Optional<Product> findByCreateDate(LocalDateTime date); boolean existsByCategoryCategoryId(Long id); }

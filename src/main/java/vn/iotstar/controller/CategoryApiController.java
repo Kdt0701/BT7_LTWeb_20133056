@@ -1,54 +1,9 @@
 package vn.iotstar.controller;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import vn.iotstar.dto.CategoryDTO;
-import vn.iotstar.service.CategoryService;
-
-import java.util.List;
-
-@RestController
-@RequestMapping("/api/v1/categories")
-@Tag(name = "Category REST API", description = "Quản lý danh mục sản phẩm")
-public class CategoryApiController {
-
-    @Autowired
-    private CategoryService categoryService;
-
-    @GetMapping
-    @Operation(summary = "Lấy danh sách tất cả Category")
-    public ResponseEntity<List<CategoryDTO>> getAll() {
-        return ResponseEntity.ok(categoryService.getAll());
-    }
-
-    @GetMapping("/{id}")
-    @Operation(summary = "Lấy thông tin Category theo ID")
-    public ResponseEntity<CategoryDTO> getById(@PathVariable Long id) {
-        CategoryDTO dto = categoryService.getById(id);
-        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
-    }
-
-    @PostMapping
-    @Operation(summary = "Thêm mới Category")
-    public ResponseEntity<CategoryDTO> create(@Valid @RequestBody CategoryDTO dto) {
-        return ResponseEntity.ok(categoryService.create(dto));
-    }
-
-    @PutMapping("/{id}")
-    @Operation(summary = "Cập nhật Category theo ID")
-    public ResponseEntity<CategoryDTO> update(@PathVariable Long id, @Valid @RequestBody CategoryDTO dto) {
-        CategoryDTO updated = categoryService.update(id, dto);
-        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
-    }
-
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Xóa Category theo ID")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        categoryService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-}
+import vn.iotstar.dto.*; import vn.iotstar.service.CategoryService; import org.springframework.data.domain.*; import org.springframework.http.*; import org.springframework.web.bind.annotation.*; import org.springframework.web.multipart.MultipartFile; import io.swagger.v3.oas.annotations.*; import io.swagger.v3.oas.annotations.tags.Tag; import java.util.*;
+@Tag(name="Category",description="CRUD Category và tải icon") @RestController @RequestMapping("/api/category") public class CategoryApiController { private final CategoryService service; public CategoryApiController(CategoryService s){service=s;}
+ @GetMapping public ResponseEntity<ApiResponse<List<CategoryResponse>>> all(@RequestParam(required=false) String q){return ResponseEntity.ok(ApiResponse.ok("Lấy danh sách Category thành công",service.findAll(q)));}
+ @GetMapping("/search") public ResponseEntity<ApiResponse<Page<CategoryResponse>>> search(@RequestParam(defaultValue="")String q,@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="10")int size){return ResponseEntity.ok(ApiResponse.ok("Tìm kiếm thành công",service.search(q,PageRequest.of(Math.max(0,page),Math.min(Math.max(1,size),100),Sort.by("categoryName")))));}
+ @PostMapping("/getCategory") public ResponseEntity<ApiResponse<CategoryResponse>> one(@RequestParam Long id){return ResponseEntity.ok(ApiResponse.ok("Lấy Category thành công",service.findById(id)));}
+ @Operation(summary="Thêm Category",description="Nhận multipart/form-data gồm categoryName và icon tùy chọn") @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode="201",description="Tạo thành công") @PostMapping(value="/addCategory",consumes=MediaType.MULTIPART_FORM_DATA_VALUE) public ResponseEntity<ApiResponse<CategoryResponse>> add(@RequestParam String categoryName,@RequestPart(required=false) MultipartFile icon){return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Thêm Category thành công",service.create(categoryName,icon)));}
+ @Operation(summary="Cập nhật Category",description="Không gửi icon sẽ giữ tệp icon cũ") @PutMapping(value="/updateCategory",consumes=MediaType.MULTIPART_FORM_DATA_VALUE) public ResponseEntity<ApiResponse<CategoryResponse>> update(@RequestParam Long categoryId,@RequestParam String categoryName,@RequestPart(required=false) MultipartFile icon){return ResponseEntity.ok(ApiResponse.ok("Cập nhật Category thành công",service.update(categoryId,categoryName,icon)));}
+ @DeleteMapping("/deleteCategory") public ResponseEntity<ApiResponse<Void>> delete(@RequestParam Long categoryId){service.delete(categoryId);return ResponseEntity.ok(ApiResponse.ok("Xóa Category thành công",null));}}

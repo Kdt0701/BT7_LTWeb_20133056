@@ -1,12 +1,3 @@
 package vn.iotstar.service;
-
-import vn.iotstar.dto.CategoryDTO;
-import java.util.List;
-
-public interface CategoryService {
-    List<CategoryDTO> getAll();
-    CategoryDTO getById(Long id);
-    CategoryDTO create(CategoryDTO dto);
-    CategoryDTO update(Long id, CategoryDTO dto);
-    void delete(Long id);
-}
+import vn.iotstar.dto.CategoryResponse; import org.springframework.data.domain.*; import org.springframework.web.multipart.MultipartFile; import java.util.*;
+public interface CategoryService { List<CategoryResponse> findAll(String query); Page<CategoryResponse> search(String query, Pageable pageable); CategoryResponse findById(Long id); CategoryResponse create(String name, MultipartFile icon); CategoryResponse update(Long id,String name,MultipartFile icon); void delete(Long id); }

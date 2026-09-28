@@ -1,52 +1,19 @@
-# ==========================================
-# Build Output & Dependencies
-# ==========================================
+# Build output
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
-# ==========================================
-# IDE & Editor Settings
-# ==========================================
-# IntelliJ IDEA
+# IDE settings
 .idea/
-*.iml
-*.iws
-*.ipr
-
-# VS Code
 .vscode/
+*.iml
 
-# STS / Eclipse
-.classpath
-.project
-.settings/
-.factorypath
-.apt_generated
-.springBeans
-.sts4-cache
-
-# ==========================================
-# Local Environment & Secrets
-# ==========================================
+# Local environment and secrets
 .env
 .env.*
 !.env.example
 application-local.properties
 application-local.yml
 application-local.yaml
-application-dev.properties
 
-# ==========================================
-# Runtime Uploads & Media
-# ==========================================
+# Runtime uploads
 uploads/
 src/main/resources/static/uploads/
-
-# ==========================================
-# OS & System Files
-# ==========================================
-.DS_Store
-Thumbs.db
-*.log

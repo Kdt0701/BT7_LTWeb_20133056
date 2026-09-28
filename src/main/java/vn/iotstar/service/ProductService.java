@@ -1,12 +1,3 @@
 package vn.iotstar.service;
-
-import vn.iotstar.dto.ProductDTO;
-import java.util.List;
-
-public interface ProductService {
-    List<ProductDTO> getAll();
-    ProductDTO getById(Long id);
-    ProductDTO create(ProductDTO dto);
-    ProductDTO update(Long id, ProductDTO dto);
-    void delete(Long id);
-}
+import vn.iotstar.dto.ProductResponse; import org.springframework.data.domain.*; import org.springframework.web.multipart.MultipartFile; import java.math.BigDecimal; import java.util.*;
+public interface ProductService { List<ProductResponse> findAll(String q); Page<ProductResponse> search(String q,Pageable p); ProductResponse findById(Long id); ProductResponse create(String name,Integer qty,BigDecimal price,String description,BigDecimal discount,Short status,Long categoryId,MultipartFile image); ProductResponse update(Long id,String name,Integer qty,BigDecimal price,String description,BigDecimal discount,Short status,Long categoryId,MultipartFile image); void delete(Long id); }
